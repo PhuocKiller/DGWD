@@ -8,7 +8,7 @@ using UnityEngine;
 public class GameNetworkCallBack : MonoBehaviour, INetworkRunnerCallbacks
 {
     Action<List<SessionInfo>> onSessionListChange;
-    Action<NetworkRunner, PlayerRef> onPlayerJoin;
+    public Action<NetworkRunner, PlayerRef> onPlayerJoin;
     public void StartGameRegister(Action<List<SessionInfo>> onSessionListChange)
     {
         this.onSessionListChange=onSessionListChange;

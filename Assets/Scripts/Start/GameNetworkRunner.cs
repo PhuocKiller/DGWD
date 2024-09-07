@@ -65,7 +65,7 @@ public class GameNetworkRunner : MonoBehaviour
             btn.interactable = false;
             Singleton<Loading>.Instance.ShowLoading();
             gameNetworkCallBack??=GetComponent<GameNetworkCallBack>();
-            gameNetworkCallBack.OnPlayerJoinRegister(SpawnPlayer);
+            gameNetworkCallBack.onPlayerJoin=SpawnPlayer;
            await runner.StartGame(new StartGameArgs
             {
                 GameMode=GameMode.Shared,
