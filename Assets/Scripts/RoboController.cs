@@ -6,31 +6,40 @@ using UnityEngine;
 public class RoboController : NetworkBehaviour
 {
     RoboInput roboInput;
-    Vector2 mousePos, inputDirection;
-    Vector3 headDirection, myInputVec3;
+    
+    Vector2 mousePos { get; set; }
+    [Networked]
+    Vector2 inputDirection { get; set; }
+
+    [Networked]
+    Vector3 headDirection { get; set; }
+    Vector3 myInputVec3;
     [SerializeField]
     LayerMask groundLayerMask;
     [SerializeField]
     Transform headTransform, bodyTransform;
     [SerializeField]
     float angle;
-    CharacterController characterController;
+    [Networked]
+    Vector3 syncPosition { get; set; }
+    Interpolator<Vector3> interpolationPosition;
+    NetworkCharacterControllerPrototype characterControllerPrototype;
 
     public override void Spawned()
     {
         base.Spawned();
-        if (Object.InputAuthority.PlayerId == 0)
-        {
-            a = 0;
-        }
+        characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
     }
 
     public override void FixedUpdateNetwork()
     {
         base.FixedUpdateNetwork();
-        if(Object.InputAuthority.PlayerId == 0 )
+        CalculateMove();
+        CalculateHeadRotation();
+        CalculateBodyRotation();
+        if (HasStateAuthority)
         {
-            Debug.Log(a);
+            
         }
     }
     public override void Render()
@@ -41,7 +50,6 @@ public class RoboController : NetworkBehaviour
     private void Awake()
     {
         roboInput = new RoboInput();
-        characterController = GetComponent<CharacterController>();
     }
     #region lifeinput
     private void OnEnable()
@@ -58,62 +66,51 @@ public class RoboController : NetworkBehaviour
     {
 
     }
-    [Networked]
-    int a  { get; set; }
+  
     // Update is called once per frame
     void Update()
     {
-        mousePos= roboInput.RoboActions.MousePosition.ReadValue<Vector2>();
-        inputDirection = roboInput.RoboActions.Move.ReadValue<Vector2>();
-        if (Object.InputAuthority.PlayerId == 0)
+        if (HasInputAuthority &&HasStateAuthority)
         {
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                a = a + 1;
-            }
-        }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.P))
-            {
-                a = a + 10;
-            }
+            mousePos = roboInput.RoboActions.MousePosition.ReadValue<Vector2>();
+            inputDirection = roboInput.RoboActions.Move.ReadValue<Vector2>();
         }
     }
     private void FixedUpdate()
     {
-        CalculateHeadRotation();
-        CalculateBodyRotation();
-        CalculateMove();
+      
     }
     void CalculateHeadRotation()
     {
-        Ray ray = Camera.main.ScreenPointToRay(mousePos);
-        if (Physics.Raycast(ray, out RaycastHit hitInfo, 200, groundLayerMask))
+        if (HasInputAuthority && HasStateAuthority)
         {
-            headDirection = (new Vector3(hitInfo.point.x, 0, hitInfo.point.z) - new Vector3(headTransform.position.x, 0, headTransform.position.z)).normalized;
+            Ray ray = Camera.main.ScreenPointToRay(mousePos);
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, 200, groundLayerMask))
+            {
+                headDirection = (new Vector3(hitInfo.point.x, 0, hitInfo.point.z) - new Vector3(headTransform.position.x, 0, headTransform.position.z)).normalized;
+            }
         }
 
        // headTransform.forward = headDirection;
        Quaternion look= Quaternion.LookRotation(headDirection);
-        headTransform.rotation = Quaternion.RotateTowards(headTransform.rotation, look, 360 * Time.fixedDeltaTime);
+        headTransform.rotation = Quaternion.RotateTowards(headTransform.rotation, look, 360 * Runner.DeltaTime);
     }
     void CalculateBodyRotation()
     {
         /*Vector3 axisRotate = new Vector3(inputDirection.y, 0, -inputDirection.x);
         bodyTransform.rotation= Quaternion.AngleAxis(angle, axisRotate);*/
 
-        Vector3 direction= new Vector3(inputDirection.y, 0, -inputDirection.x);
-        Quaternion rotate = Quaternion.Euler(direction * angle);
-        bodyTransform.rotation = Quaternion.RotateTowards(bodyTransform.rotation, rotate, 360 * Time.deltaTime);
+        Vector3 direction = inputDirection.sqrMagnitude > 0 ? new Vector3(inputDirection.y, 0, -inputDirection.x) : Vector3.zero;
 
 
+            Quaternion rotate = Quaternion.Euler(direction * angle);
+            bodyTransform.rotation = Quaternion.RotateTowards(bodyTransform.rotation, rotate, 360 * Time.deltaTime);
 
     }
     void CalculateMove()
     {
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
-        characterController.Move(moveDirection*4*Time.fixedDeltaTime);
+        characterControllerPrototype.Move(moveDirection * Runner.DeltaTime * 4);
     }
 
     
