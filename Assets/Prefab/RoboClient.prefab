@@ -34652,6 +34652,12 @@ MonoBehaviour:
   headTransform: {fileID: 1465627028434219317}
   bodyTransform: {fileID: 1521100403688876240}
   angle: 60
+  headMeshRenderer: {fileID: 4180431040174011327}
+  headMaterial:
+  - {fileID: 2100000, guid: 4e33fe7e92453c54ab05c8b86d635529, type: 2}
+  - {fileID: 2100000, guid: 13673366a5fd1e54ea0f8d9432b52944, type: 2}
+  - {fileID: 2100000, guid: 6e9982ca21d07624ebecd4698488f14d, type: 2}
+  - {fileID: 2100000, guid: e9223cc6fec7e05458a8db33fca0957f, type: 2}
 --- !u!114 &803098166108898233
 MonoBehaviour:
   m_ObjectHideFlags: 0

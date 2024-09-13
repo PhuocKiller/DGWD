@@ -20,6 +20,10 @@ public class RoboController : NetworkBehaviour
     Transform headTransform, bodyTransform;
     [SerializeField]
     float angle;
+    [SerializeField]
+    MeshRenderer headMeshRenderer;
+    [SerializeField]
+    Material[] headMaterial;
     [Networked]
     Vector3 syncPosition { get; set; }
     Interpolator<Vector3> interpolationPosition;
@@ -29,6 +33,11 @@ public class RoboController : NetworkBehaviour
     {
         base.Spawned();
         characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
+        headMeshRenderer.material= headMaterial[Object.InputAuthority.PlayerId];
+        if(Object.InputAuthority.PlayerId==Runner.LocalPlayer.PlayerId)
+        {
+            Singleton<CameraController>.Instance.SetFollowRobo(transform);
+        }
     }
 
     public override void FixedUpdateNetwork()

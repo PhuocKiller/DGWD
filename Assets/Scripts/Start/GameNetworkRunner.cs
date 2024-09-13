@@ -26,12 +26,21 @@ public class GameNetworkRunner : MonoBehaviour
     GameObject roboPlayer;
     [SerializeField]
     Transform[] spawnPoints;
+    [SerializeField]
+    GameObject readyText;
+    
 
     void SpawnPlayer(NetworkRunner m_runner, PlayerRef player)
     {
         if(player==runner.LocalPlayer &&spawnPoints.Length >player.PlayerId)
         {
-            m_runner.Spawn(roboPlayer, spawnPoints[player.PlayerId].position, Quaternion.identity, inputAuthority: player) ;
+           NetworkObject robo= m_runner.Spawn(roboPlayer, spawnPoints[player.PlayerId].position, Quaternion.identity, inputAuthority: player,
+               onBeforeSpawned: OnBeforeSpawned) ;
+            void OnBeforeSpawned(NetworkRunner runner, NetworkObject roboObject)
+            {
+                NetworkObject textR = runner.Spawn(readyText, roboObject.transform.position, inputAuthority: player);
+                textR.GetComponent<TrackingReady>().SetRoboTrans(roboObject.transform);
+            }
         }
         else
         {
