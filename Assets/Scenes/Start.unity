@@ -6250,6 +6250,8 @@ MonoBehaviour:
   - {fileID: 103360017}
   readyText: {fileID: 335034655614714933, guid: 281231b44ff2e4140be7fb3f436d733d,
     type: 3}
+  playerManagerObject: {fileID: 1202875616977467466, guid: 33d5e3b54cdac7548833d0b9888df475,
+    type: 3}
 --- !u!114 &7445022296697919660
 MonoBehaviour:
   m_ObjectHideFlags: 0

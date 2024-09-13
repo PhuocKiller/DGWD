@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class ReadyManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    List<TrackingReady> trackingReadies= new List<TrackingReady>();   
+   public void AddTrackingReady(TrackingReady trackingReady)
     {
-        
+        trackingReadies.Add(trackingReady);
     }
-
-    // Update is called once per frame
-    void Update()
+    public void GetCountReady(out int count)
     {
-        
+        int countRaw= 0;
+        foreach (var item in trackingReadies)
+        {
+            if (item.GetReady())
+            {
+                countRaw++;
+            }
+        }
+        count = countRaw;
     }
 }

@@ -16,6 +16,10 @@ public class TrackingReady : NetworkBehaviour
     [Networked(OnChanged = nameof(ChangedVisualReady))]
     bool isReady { get; set; }
     TextMeshProUGUI text;
+    public bool GetReady()
+    {
+        return isReady;
+    }
     private void Awake()
     {
         text=GetComponent<TextMeshProUGUI>();
@@ -32,6 +36,14 @@ public class TrackingReady : NetworkBehaviour
     protected static void ChangedVisualReady(Changed<TrackingReady> changed)
     {
         changed.Behaviour.text.enabled= changed.Behaviour.isReady;
+        Singleton<ReadyManager>.Instance.GetCountReady(out int countCurrentReady);
+        Debug.Log("count Current: " + countCurrentReady);
+        PlayerManager pm= FindObjectOfType<PlayerManager>();
+        if(pm)
+        {
+            pm.OnAllRoboReady(countCurrentReady);
+        }
+
     }
     public override void FixedUpdateNetwork()
     {
@@ -60,6 +72,7 @@ public class TrackingReady : NetworkBehaviour
         {
             OnChangeReady(false);
         }
+        Singleton<ReadyManager>.Instance.AddTrackingReady(this);
     }
     IEnumerator DetectRobo()
     {
@@ -92,7 +105,7 @@ public class TrackingReady : NetworkBehaviour
     {
         if (this.roboTrans != null)
         {
-            transform.position = roboPosition + new Vector3(0,5,0);
+            transform.position = roboPosition + new Vector3(0,3,0);
         }
     }
 }

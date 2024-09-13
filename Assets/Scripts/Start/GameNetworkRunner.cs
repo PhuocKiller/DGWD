@@ -28,10 +28,15 @@ public class GameNetworkRunner : MonoBehaviour
     Transform[] spawnPoints;
     [SerializeField]
     GameObject readyText;
-    
+    [SerializeField]
+    GameObject playerManagerObject;
 
     void SpawnPlayer(NetworkRunner m_runner, PlayerRef player)
     {
+        if(player == runner.LocalPlayer && runner.IsSharedModeMasterClient)
+        {
+            runner.Spawn(playerManagerObject, inputAuthority: player);
+        }
         if(player==runner.LocalPlayer &&spawnPoints.Length >player.PlayerId)
         {
            NetworkObject robo= m_runner.Spawn(roboPlayer, spawnPoints[player.PlayerId].position, Quaternion.identity, inputAuthority: player,
@@ -39,7 +44,9 @@ public class GameNetworkRunner : MonoBehaviour
             void OnBeforeSpawned(NetworkRunner runner, NetworkObject roboObject)
             {
                 NetworkObject textR = runner.Spawn(readyText, roboObject.transform.position, inputAuthority: player);
-                textR.GetComponent<TrackingReady>().SetRoboTrans(roboObject.transform);
+                TrackingReady trackingReady = textR.GetComponent<TrackingReady>();
+                trackingReady.SetRoboTrans(roboObject.transform);
+                
             }
         }
         else

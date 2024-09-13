@@ -28,7 +28,12 @@ public class RoboController : NetworkBehaviour
     Vector3 syncPosition { get; set; }
     Interpolator<Vector3> interpolationPosition;
     NetworkCharacterControllerPrototype characterControllerPrototype;
-
+    [SerializeField]
+    Transform bulletPoint;
+    [SerializeField]
+    GameObject bullet;
+    bool isFire;
+    float countDownFire=1f;
     public override void Spawned()
     {
         base.Spawned();
@@ -38,6 +43,7 @@ public class RoboController : NetworkBehaviour
         {
             Singleton<CameraController>.Instance.SetFollowRobo(transform);
         }
+        Singleton<PlayerManager>.Instance.AddRobo(this);
     }
 
     public override void FixedUpdateNetwork()
@@ -46,10 +52,26 @@ public class RoboController : NetworkBehaviour
         CalculateMove();
         CalculateHeadRotation();
         CalculateBodyRotation();
-        if (HasStateAuthority)
+        
+        if (isFire &&HasInputAuthority && countDownFire==1)
         {
-            
+            Runner.Spawn(bullet,bulletPoint.position, Quaternion.identity, inputAuthority: Object.InputAuthority,
+                onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<Bullet>().SetDirection(headTransform.forward);
+                });
+            countDownFire -= Runner.DeltaTime;
         }
+        isFire = false;
+        if (countDownFire > 0 && countDownFire<1)
+        {
+            countDownFire -= Runner.DeltaTime;
+        }
+        else
+        {
+            countDownFire = 1f;
+        }
+        
     }
     public override void Render()
     {
@@ -83,6 +105,10 @@ public class RoboController : NetworkBehaviour
         {
             mousePos = roboInput.RoboActions.MousePosition.ReadValue<Vector2>();
             inputDirection = roboInput.RoboActions.Move.ReadValue<Vector2>();
+            if (!isFire)
+            {
+                isFire = roboInput.RoboActions.Fire.triggered;
+            }
         }
     }
     private void FixedUpdate()
