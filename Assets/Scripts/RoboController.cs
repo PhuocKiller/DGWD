@@ -1,13 +1,19 @@
 using Fusion;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class RoboController : NetworkBehaviour
+public class RoboController : NetworkBehaviour, ICanTakeDamage
 {
+    [SerializeField]
+    float maxHealth;
+    [Networked]
+    float health { get; set; }
     RoboInput roboInput;
-    
     Vector2 mousePos { get; set; }
+
     [Networked]
     Vector2 inputDirection { get; set; }
 
@@ -34,9 +40,13 @@ public class RoboController : NetworkBehaviour
     GameObject bullet;
     bool isFire;
     float countDownFire=1f;
+    [SerializeField]
+    GameObject roboVisual;
+    float lives = 3;
     public override void Spawned()
     {
         base.Spawned();
+        health = maxHealth;
         characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
         headMeshRenderer.material= headMaterial[Object.InputAuthority.PlayerId];
         if(Object.InputAuthority.PlayerId==Runner.LocalPlayer.PlayerId)
@@ -76,6 +86,10 @@ public class RoboController : NetworkBehaviour
     public override void Render()
     {
         base.Render();
+        if (HasStateAuthority)
+        {
+            health = health;
+        }
     }
 
     private void Awake()
@@ -110,6 +124,10 @@ public class RoboController : NetworkBehaviour
                 isFire = roboInput.RoboActions.Fire.triggered;
             }
         }
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            health += 5;
+        } 
     }
     private void FixedUpdate()
     {
@@ -147,6 +165,43 @@ public class RoboController : NetworkBehaviour
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
         characterControllerPrototype.Move(moveDirection * Runner.DeltaTime * 4);
     }
+    [Rpc(RpcSources.All, RpcTargets.All)]   
+    public void CalculateHealth_Rpc(int damage, PlayerRef playerAttack)
+    {
+        if (health - damage > 0)
+        {
+            health -= damage;
+        }
+        else
+        {
+            health = 0;
+            if (lives>0)
+            {
+                roboVisual.SetActive(false);
+                lives -= 1;
+                health = maxHealth;
 
-    
+                GetComponent<CharacterController>().enabled = false;
+                GetComponent<CharacterController>().radius = 0;
+               StartCoroutine(Respawn());
+            }
+            else
+            {
+                Debug.Log("No live");
+            }
+        }
+        Debug.Log($"Player: {playerAttack.PlayerId} Apply damage to Player: {Object.InputAuthority.PlayerId} | current health: {health}");
+    }
+    IEnumerator Respawn()
+    {
+        yield return new WaitForSeconds(5f);
+        roboVisual.SetActive(true);
+        GetComponent<CharacterController>().enabled = true;
+        GetComponent<CharacterController>().radius = 1;
+    }
+    public void ApplyDamage(int damage, PlayerRef playerAttack, Action callback = null)
+    {
+        CalculateHealth_Rpc(damage, playerAttack);
+        callback?.Invoke();
+    }
 }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1522479381498056668}
   - component: {fileID: 7282583386805419396}
   - component: {fileID: 8932742261146364879}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Spawn
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4957,7 +4957,7 @@ GameObject:
   - component: {fileID: 8894508727271700364}
   - component: {fileID: 3016697675220542162}
   - component: {fileID: 7496796050334988947}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: MuzzleSparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9884,7 +9884,7 @@ GameObject:
   - component: {fileID: 5860818586877868260}
   - component: {fileID: 7902647608280190037}
   - component: {fileID: 5472141713300879847}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: FlashTrails
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -14785,7 +14785,7 @@ GameObject:
   - component: {fileID: 2900319216801144869}
   - component: {fileID: 330952685481510613}
   - component: {fileID: 8032637645483984483}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Smoke
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19694,7 +19694,7 @@ GameObject:
   - component: {fileID: 5254252774439565418}
   - component: {fileID: 1153445082614374074}
   - component: {fileID: 2272645670963553089}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cylinder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19778,7 +19778,7 @@ GameObject:
   - component: {fileID: 6670739732155230479}
   - component: {fileID: 3473831959166595794}
   - component: {fileID: 4180431040174011327}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Head
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -19862,7 +19862,7 @@ GameObject:
   - component: {fileID: 1374788802257495630}
   - component: {fileID: 3449288444626246524}
   - component: {fileID: 554351597497067833}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SphereGlow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -24762,7 +24762,7 @@ GameObject:
   - component: {fileID: 5846679962052840718}
   - component: {fileID: 8167045320339318557}
   - component: {fileID: 7105262397146575457}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Sparks
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29662,7 +29662,7 @@ GameObject:
   - component: {fileID: 2300952624757969369}
   - component: {fileID: 3020943851075446338}
   - component: {fileID: 2541472895595921610}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: VerticalSpark
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34569,7 +34569,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8348616855654307461}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Robo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34608,7 +34608,7 @@ GameObject:
   - component: {fileID: 803098166108898233}
   - component: {fileID: 3376562290829959632}
   - component: {fileID: 7097403045140057229}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: RoboClient
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -34646,6 +34646,7 @@ MonoBehaviour:
   WordOffset: 0
   WordCount: 0
   _interpolationDataSource: 0
+  maxHealth: 100
   groundLayerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -34660,6 +34661,7 @@ MonoBehaviour:
   - {fileID: 2100000, guid: e9223cc6fec7e05458a8db33fca0957f, type: 2}
   bulletPoint: {fileID: 1030848565050458600}
   bullet: {fileID: 5311740422214820999, guid: 4ea2639d55bb83340a8b85af0929f3cd, type: 3}
+  roboVisual: {fileID: 3245910849444339809}
 --- !u!114 &803098166108898233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -34760,7 +34762,7 @@ GameObject:
   - component: {fileID: 4231390245901648319}
   - component: {fileID: 5859447395297646344}
   - component: {fileID: 9065988942485217876}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: JetIdle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -39750,7 +39752,7 @@ GameObject:
   - component: {fileID: 2560214772036202817}
   - component: {fileID: 218186612693255863}
   - component: {fileID: 7378160513150545553}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: BulletMuzzleBlue
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -44679,7 +44681,7 @@ GameObject:
   - component: {fileID: 1690276726532358798}
   - component: {fileID: 5308045316394904371}
   - component: {fileID: 3468831249622561052}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Explosion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49581,7 +49583,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1030848565050458600}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Point
   m_TagString: Untagged
   m_Icon: {fileID: 7148428337604731935, guid: 0000000000000000d000000000000000, type: 0}
@@ -49612,7 +49614,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1465627028434219317}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: HeadParent
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -49647,7 +49649,7 @@ GameObject:
   - component: {fileID: 208467382826492928}
   - component: {fileID: 8994114675728816497}
   - component: {fileID: 3264208930349759991}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: SparkTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -54601,7 +54603,7 @@ GameObject:
   - component: {fileID: 6623009729231624136}
   - component: {fileID: 7871598154013400708}
   - component: {fileID: 6785750826100025526}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: StartRing
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -59526,7 +59528,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1521100403688876240}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
