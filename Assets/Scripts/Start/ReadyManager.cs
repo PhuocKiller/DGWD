@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ReadyManager : MonoBehaviour
 {
-    List<TrackingReady> trackingReadies= new List<TrackingReady>();   
+   public  List<TrackingReady> trackingReadies= new List<TrackingReady>();   
    public void AddTrackingReady(TrackingReady trackingReady)
     {
         trackingReadies.Add(trackingReady);

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class TrackingReady : NetworkBehaviour
 {
@@ -20,6 +21,10 @@ public class TrackingReady : NetworkBehaviour
     {
         return isReady;
     }
+    public void SetReady(bool isReady)
+    {
+        this.isReady = isReady;
+    }
     private void Awake()
     {
         text=GetComponent<TextMeshProUGUI>();
@@ -35,9 +40,9 @@ public class TrackingReady : NetworkBehaviour
     }
     protected static void ChangedVisualReady(Changed<TrackingReady> changed)
     {
-        changed.Behaviour.text.enabled= changed.Behaviour.isReady;
+        changed.Behaviour.text.enabled = changed.Behaviour.isReady;
         Singleton<ReadyManager>.Instance.GetCountReady(out int countCurrentReady);
-        Debug.Log("count Current: " + countCurrentReady);
+        //Debug.Log($"count Current: {countCurrentReady}" );
         PlayerManager pm= FindObjectOfType<PlayerManager>();
         if(pm)
         {
@@ -95,7 +100,7 @@ public class TrackingReady : NetworkBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R) && HasStateAuthority)
+        if (Input.GetKeyDown(KeyCode.R) && HasStateAuthority && SceneManager.GetActiveScene().name=="Start")
         {
             OnChangeReady(!isReady);
         }

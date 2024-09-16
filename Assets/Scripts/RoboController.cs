@@ -3,7 +3,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RoboController : NetworkBehaviour, ICanTakeDamage
 {
@@ -42,10 +44,11 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     float countDownFire=1f;
     [SerializeField]
     GameObject roboVisual;
-    float lives = 3;
+    float lives = 2;
     public override void Spawned()
     {
         base.Spawned();
+        DontDestroyOnLoad(gameObject);
         health = maxHealth;
         characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
         headMeshRenderer.material= headMaterial[Object.InputAuthority.PlayerId];
@@ -55,6 +58,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         }
         Singleton<PlayerManager>.Instance.AddRobo(this);
     }
+    
 
     public override void FixedUpdateNetwork()
     {
@@ -129,10 +133,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
             health += 5;
         } 
     }
-    private void FixedUpdate()
-    {
-      
-    }
+  
     void CalculateHeadRotation()
     {
         if (HasInputAuthority && HasStateAuthority)
@@ -171,11 +172,12 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         if (health - damage > 0)
         {
             health -= damage;
+            Debug.Log($"Player: {playerAttack.PlayerId} Apply damage to Player: {Object.InputAuthority.PlayerId} | current health: {health}");
         }
         else
         {
             health = 0;
-            if (lives>0)
+            if (lives>1)
             {
                 roboVisual.SetActive(false);
                 lives -= 1;
@@ -187,17 +189,22 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
             }
             else
             {
-                Debug.Log("No live");
+                Singleton<PlayerManager>.Instance.RemoveRobo(this);
+                Singleton<WinPanel>.Instance.SetActiveWinPanel(true);
+                Runner.Despawn(Object);
+                
             }
         }
-        Debug.Log($"Player: {playerAttack.PlayerId} Apply damage to Player: {Object.InputAuthority.PlayerId} | current health: {health}");
+        
     }
     IEnumerator Respawn()
     {
-        yield return new WaitForSeconds(5f);
+        transform.position = GameObject.Find("Respawn").transform.GetChild(Object.InputAuthority.PlayerId).position;
+        yield return new WaitForSeconds(3f);
         roboVisual.SetActive(true);
         GetComponent<CharacterController>().enabled = true;
         GetComponent<CharacterController>().radius = 1;
+       
     }
     public void ApplyDamage(int damage, PlayerRef playerAttack, Action callback = null)
     {

@@ -29,13 +29,15 @@ public class GameNetworkRunner : MonoBehaviour
     [SerializeField]
     GameObject readyText;
     [SerializeField]
-    GameObject playerManagerObject;
+    GameObject playerManagerObject, winPanel;
 
     void SpawnPlayer(NetworkRunner m_runner, PlayerRef player)
     {
         if(player == runner.LocalPlayer && runner.IsSharedModeMasterClient)
         {
             runner.Spawn(playerManagerObject, inputAuthority: player);
+            NetworkObject winPanelClone= runner.Spawn(winPanel, inputAuthority: player);
+           // winPanelClone.transform.parent = this.transform;
         }
         if(player==runner.LocalPlayer &&spawnPoints.Length >player.PlayerId)
         {
