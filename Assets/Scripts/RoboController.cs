@@ -43,6 +43,9 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     [SerializeField]
     GameObject roboVisual;
     float lives = 3;
+    bool visualChanged;
+    [Networked]
+    TickTimer respawnCount {  get; set; }
     public override void Spawned()
     {
         base.Spawned();
@@ -59,6 +62,21 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     public override void FixedUpdateNetwork()
     {
         base.FixedUpdateNetwork();
+        if (respawnCount.RemainingTicks(Runner) <= 1 && visualChanged)
+        {
+            visualChanged = false;
+            headTransform.gameObject.SetActive(true);
+            bodyTransform.gameObject.SetActive(true);
+        }
+        if (respawnCount.IsRunning && !respawnCount.Expired(Runner))
+        {
+            if (visualChanged) { return; }
+            visualChanged = true;
+            headTransform.gameObject.SetActive(false);
+            bodyTransform.gameObject.SetActive(false);
+        }
+        
+        if(visualChanged) { return; }
         CalculateMove();
         CalculateHeadRotation();
         CalculateBodyRotation();
@@ -81,7 +99,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         {
             countDownFire = 1f;
         }
-        
+      
     }
     public override void Render()
     {
@@ -183,7 +201,10 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
 
                 GetComponent<CharacterController>().enabled = false;
                 GetComponent<CharacterController>().radius = 0;
-               StartCoroutine(Respawn());
+                if (HasStateAuthority)
+                {
+                    RespawnRobo(3);
+                }
             }
             else
             {
@@ -192,9 +213,9 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         }
         Debug.Log($"Player: {playerAttack.PlayerId} Apply damage to Player: {Object.InputAuthority.PlayerId} | current health: {health}");
     }
-    IEnumerator Respawn()
+    void RespawnRobo(int second)
     {
-        yield return new WaitForSeconds(5f);
+        respawnCount=TickTimer.CreateFromSeconds(Runner,second);
         roboVisual.SetActive(true);
         GetComponent<CharacterController>().enabled = true;
         GetComponent<CharacterController>().radius = 1;
