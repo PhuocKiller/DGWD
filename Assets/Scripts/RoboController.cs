@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class RoboController : NetworkBehaviour, ICanTakeDamage
@@ -52,40 +53,26 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         health = maxHealth;
         characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
         headMeshRenderer.material= headMaterial[Object.InputAuthority.PlayerId];
-        if(Object.InputAuthority.PlayerId==Runner.LocalPlayer.PlayerId)
-        {
-            Singleton<CameraController>.Instance.SetFollowRobo(transform);
-        }
+       
         Singleton<PlayerManager>.Instance.AddRobo(this);
+        if (Object.InputAuthority.PlayerId == Runner.LocalPlayer.PlayerId
+          )
+        {
+            Singleton<CameraController>.Instance.SetFollowRoboIndex(Runner.LocalPlayer.PlayerId);
+        }
     }
     
 
     public override void FixedUpdateNetwork()
     {
         base.FixedUpdateNetwork();
-        CalculateMove();
+        if (SceneManager.GetActiveScene().name =="Play")
+        {
+            CalculateMove();
+            CalculateFire();
+            CalculateBodyRotation();
+        }
         CalculateHeadRotation();
-        CalculateBodyRotation();
-        
-        if (isFire &&HasInputAuthority && countDownFire==1)
-        {
-            Runner.Spawn(bullet,bulletPoint.position, Quaternion.identity, inputAuthority: Object.InputAuthority,
-                onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
-                {
-                    obj.GetComponent<Bullet>().SetDirection(headTransform.forward);
-                });
-            countDownFire -= Runner.DeltaTime;
-        }
-        isFire = false;
-        if (countDownFire > 0 && countDownFire<1)
-        {
-            countDownFire -= Runner.DeltaTime;
-        }
-        else
-        {
-            countDownFire = 1f;
-        }
-        
     }
     public override void Render()
     {
@@ -166,6 +153,27 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
         characterControllerPrototype.Move(moveDirection * Runner.DeltaTime * 4);
     }
+    void CalculateFire()
+    {
+        if (isFire && HasInputAuthority && countDownFire == 1)
+        {
+            Runner.Spawn(bullet, bulletPoint.position, Quaternion.identity, inputAuthority: Object.InputAuthority,
+                onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
+                {
+                    obj.GetComponent<Bullet>().SetDirection(headTransform.forward);
+                });
+            countDownFire -= Runner.DeltaTime;
+        }
+        isFire = false;
+        if (countDownFire > 0 && countDownFire < 1)
+        {
+            countDownFire -= Runner.DeltaTime;
+        }
+        else
+        {
+            countDownFire = 1f;
+        }
+    }
     [Rpc(RpcSources.All, RpcTargets.All)]   
     public void CalculateHealth_Rpc(int damage, PlayerRef playerAttack)
     {
@@ -199,12 +207,21 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     }
     IEnumerator Respawn()
     {
-        transform.position = GameObject.Find("Respawn").transform.GetChild(Object.InputAuthority.PlayerId).position;
+        DelayRelocate();
         yield return new WaitForSeconds(3f);
         roboVisual.SetActive(true);
         GetComponent<CharacterController>().enabled = true;
         GetComponent<CharacterController>().radius = 1;
-       
+    }
+    
+    public void DelayRelocate()
+    {
+        StartCoroutine(Relocate());
+    }
+    IEnumerator Relocate()
+    {
+        yield return new WaitForSeconds(2f);
+        transform.position = GameObject.Find("Respawn").transform.GetChild(Object.InputAuthority.PlayerId).position;
     }
     public void ApplyDamage(int damage, PlayerRef playerAttack, Action callback = null)
     {

@@ -10,7 +10,7 @@ using UnityEngine.UIElements;
 
 public class PlayerManager : NetworkBehaviour
 {
-    List<RoboController> roboControllers = new List<RoboController>();
+    public List<RoboController> roboControllers = new List<RoboController>();
     [SerializeField]
     bool isEndGame;
 
@@ -63,17 +63,13 @@ public class PlayerManager : NetworkBehaviour
             Debug.Log("All Robo Ready");
             Runner.SessionInfo.IsOpen = false;
             Runner.SessionInfo.IsVisible = false;
-            Singleton<ManagerScene>.Instance.PlayGameScene();
-            foreach (var ready in FindObjectsOfType<TrackingReady>())
-            {
-                ready.gameObject.GetComponent<TextMeshProUGUI>().enabled = false;
-            }
-
-            // Singleton<Loading>.Instance.ShowLoading();
+            Singleton<ReadyPanel>.Instance.SetActiveReadyPanel(true);
+            
         }
         else
         {
             Debug.Log($" {currentReady} / {roboControllers.Count}");
+            Singleton<ReadyPanel>.Instance.SetActiveReadyPanel(false);
         }
     }
 }
