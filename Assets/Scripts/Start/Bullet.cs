@@ -43,7 +43,8 @@ public class Bullet : NetworkBehaviour
     {
         if (HasStateAuthority && other.gameObject.layer == 7
             && !other.gameObject.GetComponent<NetworkObject>().HasStateAuthority
-             && !collisions.Contains(other))
+             && !collisions.Contains(other)
+             &&other.gameObject.GetComponent<RoboController>().GetCurrentState()==0)
         {
             collisions.Add(other);
             other.gameObject.GetComponent<ICanTakeDamage>().ApplyDamage(20, Object.InputAuthority,

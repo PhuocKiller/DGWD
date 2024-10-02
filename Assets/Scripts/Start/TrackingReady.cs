@@ -24,10 +24,24 @@ public class TrackingReady : NetworkBehaviour
     {
         text=GetComponent<TextMeshProUGUI>();
     }
-    void OnChangeReady(bool isReady)
+    public void HideReady()
     {
-        this.isReady=isReady;
-        text.enabled = isReady;
+        if(HasStateAuthority &&Object.IsValid)
+        {
+            this.isReady = false;
+            text.enabled = false;
+        }
+        
+    }
+    public void OnChangeReady()
+    {
+        if (HasStateAuthority)
+        {
+            bool newReady = !isReady;
+            this.isReady = newReady;
+            text.enabled = newReady;
+        }
+        
     }
     protected static void OnTotalPlayerChanged(Changed<TrackingReady> changed)
     {
@@ -70,7 +84,7 @@ public class TrackingReady : NetworkBehaviour
         totalPlayer += 1;
         if(HasStateAuthority)
         {
-            OnChangeReady(false);
+            isReady = false;
         }
         Singleton<ReadyManager>.Instance.AddTrackingReady(this);
     }
@@ -95,10 +109,7 @@ public class TrackingReady : NetworkBehaviour
     }
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R) && HasStateAuthority)
-        {
-            OnChangeReady(!isReady);
-        }
+       
     }
 
     private void LateUpdate()

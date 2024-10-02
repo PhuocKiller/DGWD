@@ -30,12 +30,16 @@ public class GameNetworkRunner : MonoBehaviour
     GameObject readyText;
     [SerializeField]
     GameObject playerManagerObject;
+    [SerializeField]
+    GameObject GameManagerObject;
+
 
     void SpawnPlayer(NetworkRunner m_runner, PlayerRef player)
     {
         if(player == runner.LocalPlayer && runner.IsSharedModeMasterClient)
         {
             runner.Spawn(playerManagerObject, inputAuthority: player);
+            runner.Spawn(GameManagerObject, inputAuthority: player);
         }
         if(player==runner.LocalPlayer &&spawnPoints.Length >player.PlayerId)
         {
@@ -43,16 +47,18 @@ public class GameNetworkRunner : MonoBehaviour
                onBeforeSpawned: OnBeforeSpawned) ;
             void OnBeforeSpawned(NetworkRunner runner, NetworkObject roboObject)
             {
+                roboObject.GetComponent<RoboController>().SetSpawnPoint(spawnPoints[player.PlayerId].position);
                 NetworkObject textR = runner.Spawn(readyText, roboObject.transform.position, inputAuthority: player);
                 TrackingReady trackingReady = textR.GetComponent<TrackingReady>();
                 trackingReady.SetRoboTrans(roboObject.transform);
-                
+                roboObject.GetComponent<RoboController>().SetTrackingReady(trackingReady);
             }
         }
         else
         {
             Debug.Log("No spawn" + player.PlayerId);
         }
+        
         
     }
     
@@ -86,7 +92,8 @@ public class GameNetworkRunner : MonoBehaviour
             {
                 GameMode=GameMode.Shared,
                 SessionName=roomName,
-                CustomLobbyName="VN"
+                CustomLobbyName="VN",
+                SceneManager= GetComponent<LoadSceneManager>()
             });
             onConnected?.Invoke();
             Singleton<Loading>.Instance.HideLoading();

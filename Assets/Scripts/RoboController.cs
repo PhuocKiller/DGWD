@@ -7,6 +7,7 @@ using UnityEngine;
 
 public class RoboController : NetworkBehaviour, ICanTakeDamage
 {
+    bool isDetectInput, isDetectReady;
     [SerializeField]
     float maxHealth;
     [Networked]
@@ -39,41 +40,147 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     [SerializeField]
     GameObject bullet;
     bool isFire;
-    float countDownFire=1f;
+    float countDownFire=0.5f;
     [SerializeField]
     GameObject roboVisual;
     float lives = 3;
-    bool visualChanged;
-    [Networked]
+    bool visualChanged = false;
+    TrackingReady trackingReady;
+
+    //0 la binh thuong
+    // 1 la respawn visualchange false
+    //2 respawn visualchange true
+    [Networked(OnChanged =nameof(ListenState))]
+    int state {  get; set; }
     TickTimer respawnCount {  get; set; }
+    [Networked]
+    private Vector3 spawnPoint {  get; set; }
+    Vector3 spawnPointlocal;
+    bool flagState;
+    public void SetTrackingReady(TrackingReady trackingReady)
+    {
+        this.trackingReady = trackingReady; 
+    }
+    public void SetSpawnPoint(Vector3 setSpawnPoint)
+    {
+        spawnPointlocal = setSpawnPoint;
+    }
+    public int GetCurrentState()
+    {
+        return state;
+    }
+    protected static void ListenState(Changed<RoboController> changed)
+    {
+        if (changed.Behaviour.state==1)
+        {
+            changed.Behaviour.headTransform.gameObject.SetActive(true);
+            changed.Behaviour.bodyTransform.gameObject.SetActive(true);
+            if (changed.Behaviour.Object.HasStateAuthority)
+            {
+                changed.Behaviour.characterControllerPrototype.TeleportToPosition(changed.Behaviour.spawnPointlocal);
+            }
+            changed.Behaviour.CheckCamera(changed.Behaviour.Object.InputAuthority, true);
+            
+            changed.Behaviour.StartCoroutine(changed.Behaviour.CheckFlag());
+            return;
+        }
+        if (changed.Behaviour.state==2) 
+        {
+            changed.Behaviour.headTransform.gameObject.SetActive(false);
+            changed.Behaviour.bodyTransform.gameObject.SetActive(false);
+            changed.Behaviour.flagState = true;
+            if (changed.Behaviour.Object.HasStateAuthority)
+            {
+                changed.Behaviour.characterControllerPrototype.TeleportToPosition(new Vector3(-500, -500, -500));
+
+            }
+            changed.Behaviour.CheckCamera(changed.Behaviour.Object.InputAuthority, false);
+           
+            return; 
+        }
+    }
+    void CheckCamera(PlayerRef player, bool isFollow)
+    {
+        if (player == Runner.LocalPlayer)
+        {
+            if(isFollow)
+            {
+                Singleton<CameraController>.Instance.SetFollowRobo(transform);
+            }
+            else
+            {
+                Singleton<CameraController>.Instance.RemoveFollowRobo();
+            }
+            
+        }
+
+    }
+    public IEnumerator CheckFlag()
+    {
+        yield return new WaitForSeconds(0.1f);
+        flagState = false;
+
+    }
     public override void Spawned()
     {
         base.Spawned();
+        if (HasStateAuthority)
+        {
+            state = 0;
+        }
         health = maxHealth;
         characterControllerPrototype = GetComponent<NetworkCharacterControllerPrototype>();
         headMeshRenderer.material= headMaterial[Object.InputAuthority.PlayerId];
         if(Object.InputAuthority.PlayerId==Runner.LocalPlayer.PlayerId)
         {
             Singleton<CameraController>.Instance.SetFollowRobo(transform);
+            FindObjectOfType<GameManager>().RegisterOnGameStateChanged(OnGameStateChanged);
         }
         Singleton<PlayerManager>.Instance.AddRobo(this);
     }
-
+    public void OnGameStateChanged(GameState oldState, GameState newState)
+    {
+        if (HasStateAuthority)
+        {
+            if (newState == GameState.Transition || newState == GameState.None)
+            {
+                isDetectInput = false;
+            }
+            else
+            {
+                isDetectInput = true;
+            }
+            isDetectReady = newState == GameState.Lobby;
+            if (newState != GameState.Lobby && trackingReady!=null)
+            {
+                trackingReady.HideReady();
+            }
+        }
+        
+        
+    }
     public override void FixedUpdateNetwork()
     {
         base.FixedUpdateNetwork();
-        if (respawnCount.RemainingTicks(Runner) <= 1 && visualChanged)
+        
         {
-            visualChanged = false;
-            headTransform.gameObject.SetActive(true);
-            bodyTransform.gameObject.SetActive(true);
+            
         }
-        if (respawnCount.IsRunning && !respawnCount.Expired(Runner))
+        if (HasStateAuthority)
         {
-            if (visualChanged) { return; }
-            visualChanged = true;
-            headTransform.gameObject.SetActive(false);
-            bodyTransform.gameObject.SetActive(false);
+            if (respawnCount.RemainingTicks(Runner) <= 1 && visualChanged)
+            {
+                state = 1;
+                visualChanged = false;
+                
+            }
+            if (respawnCount.IsRunning && !respawnCount.Expired(Runner))
+            {
+                if (visualChanged) { return; }
+                state = 2;
+                visualChanged = true;
+                
+            }
         }
         
         if(visualChanged) { return; }
@@ -81,7 +188,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
         CalculateHeadRotation();
         CalculateBodyRotation();
         
-        if (isFire &&HasInputAuthority && countDownFire==1)
+        if (isFire &&HasInputAuthority && countDownFire==0.5)
         {
             Runner.Spawn(bullet,bulletPoint.position, Quaternion.identity, inputAuthority: Object.InputAuthority,
                 onBeforeSpawned: (NetworkRunner runner, NetworkObject obj) =>
@@ -91,13 +198,13 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
             countDownFire -= Runner.DeltaTime;
         }
         isFire = false;
-        if (countDownFire > 0 && countDownFire<1)
+        if (countDownFire > 0 && countDownFire<0.5)
         {
             countDownFire -= Runner.DeltaTime;
         }
         else
         {
-            countDownFire = 1f;
+            countDownFire = 0.5f;
         }
       
     }
@@ -133,6 +240,13 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     // Update is called once per frame
     void Update()
     {
+        if (HasStateAuthority&&Object.IsValid)
+        {
+            if (!isDetectInput)
+            {
+                return;
+            }
+        }
         if (HasInputAuthority &&HasStateAuthority)
         {
             mousePos = roboInput.RoboActions.MousePosition.ReadValue<Vector2>();
@@ -142,10 +256,11 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
                 isFire = roboInput.RoboActions.Fire.triggered;
             }
         }
-        if (Input.GetKeyDown(KeyCode.Z))
+        if (HasInputAuthority && isDetectReady && Object.IsValid 
+            &&roboInput.RoboActions.Ready.triggered &&trackingReady!=null)
         {
-            health += 5;
-        } 
+            trackingReady.OnChangeReady();
+        }
     }
     private void FixedUpdate()
     {
@@ -181,6 +296,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     void CalculateMove()
     {
         Vector3 moveDirection = new Vector3(inputDirection.x, 0, inputDirection.y);
+        if (flagState) { return; }
         characterControllerPrototype.Move(moveDirection * Runner.DeltaTime * 4);
     }
     [Rpc(RpcSources.All, RpcTargets.All)]   
@@ -195,12 +311,8 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
             health = 0;
             if (lives>0)
             {
-                roboVisual.SetActive(false);
                 lives -= 1;
                 health = maxHealth;
-
-                GetComponent<CharacterController>().enabled = false;
-                GetComponent<CharacterController>().radius = 0;
                 if (HasStateAuthority)
                 {
                     RespawnRobo(3);
@@ -216,9 +328,7 @@ public class RoboController : NetworkBehaviour, ICanTakeDamage
     void RespawnRobo(int second)
     {
         respawnCount=TickTimer.CreateFromSeconds(Runner,second);
-        roboVisual.SetActive(true);
-        GetComponent<CharacterController>().enabled = true;
-        GetComponent<CharacterController>().radius = 1;
+        
     }
     public void ApplyDamage(int damage, PlayerRef playerAttack, Action callback = null)
     {

@@ -53,6 +53,15 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Ready"",
+                    ""type"": ""Button"",
+                    ""id"": ""6baeaf93-ae38-48f2-bb2b-c62b7f660bd1"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -143,6 +152,17 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
                     ""action"": ""Fire"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""046cd548-6440-4603-9dff-2d46e7e755e7"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Ready"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -154,6 +174,7 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
         m_RoboActions_Move = m_RoboActions.FindAction("Move", throwIfNotFound: true);
         m_RoboActions_MousePosition = m_RoboActions.FindAction("MousePosition", throwIfNotFound: true);
         m_RoboActions_Fire = m_RoboActions.FindAction("Fire", throwIfNotFound: true);
+        m_RoboActions_Ready = m_RoboActions.FindAction("Ready", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -218,6 +239,7 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_RoboActions_Move;
     private readonly InputAction m_RoboActions_MousePosition;
     private readonly InputAction m_RoboActions_Fire;
+    private readonly InputAction m_RoboActions_Ready;
     public struct RoboActionsActions
     {
         private @RoboInput m_Wrapper;
@@ -225,6 +247,7 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
         public InputAction @Move => m_Wrapper.m_RoboActions_Move;
         public InputAction @MousePosition => m_Wrapper.m_RoboActions_MousePosition;
         public InputAction @Fire => m_Wrapper.m_RoboActions_Fire;
+        public InputAction @Ready => m_Wrapper.m_RoboActions_Ready;
         public InputActionMap Get() { return m_Wrapper.m_RoboActions; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -243,6 +266,9 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
             @Fire.started += instance.OnFire;
             @Fire.performed += instance.OnFire;
             @Fire.canceled += instance.OnFire;
+            @Ready.started += instance.OnReady;
+            @Ready.performed += instance.OnReady;
+            @Ready.canceled += instance.OnReady;
         }
 
         private void UnregisterCallbacks(IRoboActionsActions instance)
@@ -256,6 +282,9 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
             @Fire.started -= instance.OnFire;
             @Fire.performed -= instance.OnFire;
             @Fire.canceled -= instance.OnFire;
+            @Ready.started -= instance.OnReady;
+            @Ready.performed -= instance.OnReady;
+            @Ready.canceled -= instance.OnReady;
         }
 
         public void RemoveCallbacks(IRoboActionsActions instance)
@@ -278,5 +307,6 @@ public partial class @RoboInput: IInputActionCollection2, IDisposable
         void OnMove(InputAction.CallbackContext context);
         void OnMousePosition(InputAction.CallbackContext context);
         void OnFire(InputAction.CallbackContext context);
+        void OnReady(InputAction.CallbackContext context);
     }
 }

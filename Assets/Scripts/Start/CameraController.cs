@@ -11,6 +11,7 @@ public class CameraController : MonoBehaviour
     void Start()
     {
         virtualCamera=GetComponent<CinemachineVirtualCamera>();
+        Singleton<CinemachineBrain>.Instance.m_ShowCameraFrustum = true;
     }
 
     // Update is called once per frame
@@ -21,5 +22,9 @@ public class CameraController : MonoBehaviour
     public void SetFollowRobo(Transform roboTransform)
     {
         virtualCamera.Follow = roboTransform;
+    }
+    public void RemoveFollowRobo ()
+    {
+        virtualCamera.Follow=null;
     }
 }

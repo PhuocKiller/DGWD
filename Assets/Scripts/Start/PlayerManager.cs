@@ -2,6 +2,7 @@ using Fusion;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerManager : NetworkBehaviour
 {
@@ -33,7 +34,13 @@ public class PlayerManager : NetworkBehaviour
             Debug.Log("All Robo Ready");
             Runner.SessionInfo.IsOpen = false;
             Runner.SessionInfo.IsVisible = false;
-            Singleton<Loading>.Instance.ShowLoading();
+            //  Singleton<Loading>.Instance.ShowLoading();
+            if (Runner.IsSharedModeMasterClient)
+            {
+                Runner.SetActiveScene(1);
+            }
+
+            //SceneManager.LoadScene("Game", LoadSceneMode.Additive);
         }
         else
         {
